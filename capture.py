@@ -53,7 +53,7 @@ def combine_warcs(folder):
     return f"{folder}{warcs[0]}.gz"
 
 
-class create_yaml(object):
+class Yaml(object):
     def __init__(self, urls, location, capture_name=(False, "Capture Name"), crawl_name=False):
         self.urls = no_blanks(urls)
         self.location = slash(location)
@@ -153,7 +153,7 @@ When happy with the template, save it and hit return here in the terminal>""")
             sys.exit(f"Crawl {self.crawl_name} failed to launch")
 
 
-class check_cdx(object):
+class Cdx(object):
     def __init__(self, cdx=(False, "CDX location")):
         self.cdx = get_value(cdx)
         try:
@@ -181,7 +181,7 @@ class check_cdx(object):
         return response_url_dict(self.rud)
 
 
-class response_url_dict(object):
+class Response_url_dict(object):
     def __init__(self, rud):
         self.rud = rud
 
