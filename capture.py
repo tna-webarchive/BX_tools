@@ -218,11 +218,11 @@ class Response_url_dict(object):
 
 def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "path to directory in which to locate this crawl"), crawl_depth=3, num_tabs=5, mode="record", browser="chrome:84"):
     def crawl(urls, crawl_name):
-        yaml_object = create_yaml(urls, capture_loc, capture_name, crawl_name)
+        yaml_object = Yaml(urls, capture_loc, capture_name, crawl_name)
         yaml_object.write(crawl_depth=crawl_depth, num_tabs=num_tabs, mode=mode, browser=browser)
         yaml_object.run()
 
-        cdx = check_cdx(f"{home}browsertrix/webarchive/collections/{capture_name}/indexes/autoindex.cdxj")
+        cdx = Cdx(f"{home}browsertrix/webarchive/collections/{capture_name}/indexes/autoindex.cdxj")
         rud = cdx.create_rud()
         counts = rud.get_counts()
 
