@@ -249,7 +249,7 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     urls = no_blanks(url_list)
-    capture_name = get_value(capture_name) + timestamp
+    capture_name = get_value(capture_name) + "_" + timestamp
     area = slash(get_value(area))
     capture_loc = area + capture_name
 
