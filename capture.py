@@ -182,7 +182,7 @@ class Cdx(object):
             except:
                 self.rud[int(line["status"])] = [line["url"]]
 
-        return response_url_dict(self.rud)
+        return Response_url_dict(self.rud)
 
 
 class Response_url_dict(object):
