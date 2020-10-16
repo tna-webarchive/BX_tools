@@ -140,7 +140,6 @@ When happy with the template, save it and hit return here in the terminal>""")
                 os.system(f"sudo chmod -R 777 {bx_loc}")
                 cdx = generate_cdx(f"{bx_loc}archive/")
                 os.system(f"mv {cdx} {bx_loc}indexes/autoindex.cdxj")
-                os.system(f"sudo chmod -R root {bx_loc}")
 
         command = f"sudo browsertrix crawl create {self.yaml_loc}"
         if os.path.isfile(f"{self.location}{self.crawl_name}.yaml"):
