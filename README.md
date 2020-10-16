@@ -1,1 +1,1 @@
-A package of tools for working with Brwosertrix crawls.
+A package of tools for working with Browsertrix crawls.
