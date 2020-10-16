@@ -55,9 +55,12 @@ def combine_warcs(folder):
 
 class Yaml(object):
     def __init__(self, urls, location, capture_name=(False, "Capture Name"), crawl_name=False):
+        unusable = [".", "-", "/", ":", ",", "?", "!", ";", "(", ")", "[", "]", "{", "}", "#", "@", "\\", "=", "&", ">", "<"]
         self.urls = no_blanks(urls)
         self.location = slash(location)
         self.capture_name = get_value(capture_name)
+        while any(punctuation in self.capture_name for punctuation in unusable):
+            self.capture_name = input("Capture name cannot include punctuation (except underscore _). Please re-enter: >")
         self.crawl_name = self.capture_name if not crawl_name else crawl_name
 
         self.yaml_loc = f"{self.location}{self.crawl_name}.yaml"
