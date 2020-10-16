@@ -65,7 +65,8 @@ class Yaml(object):
 
         self.yaml_loc = f"{self.location}{self.crawl_name}.yaml"
 
-        self.domains = set([{"domain": x.split("/")[2]} for x in self.urls])
+        self.domains = [{"domain": x.split("/")[2]} for x in self.urls]
+        self.domains = [dict(t) for t in {tuple(d.items()) for d in self.domains}]
 
         self.template = """{'crawls': [{'name': self.crawl_name, 'crawl_type': "(crawl_type)", 'crawl_depth': "(crawl_depth)",
                                 'num_browsers': 1, 'num_tabs': "(num_tabs)", 'coll': self.capture_name,
