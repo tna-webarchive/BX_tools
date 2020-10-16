@@ -247,7 +247,7 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
 
         return crawl_details
 
-    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    timestamp = datetime.datetime.now().strftime("%d%m%Y")
     urls = no_blanks(url_list)
     capture_name = get_value(capture_name) + "_" + timestamp
     area = slash(get_value(area))
