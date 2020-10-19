@@ -36,6 +36,7 @@ def generate_cdx(warc_file_or_folder, name="autoindex.cdxj"):
     return cdx
 
 def to_pywb(warc_file_or_folder, coll_name):
+    home = slash(os.path.expanduser("~"))
     os.chdir(home)
     if not os.path.isdir(f"collections/{coll_name}"):
         os.system(f"wb-manager init {coll_name}")
