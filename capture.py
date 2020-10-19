@@ -35,6 +35,18 @@ def generate_cdx(warc_file_or_folder, name="autoindex.cdxj"):
 
     return cdx
 
+def to_pywb(warc_file_or_folder, coll_name):
+    os.chdir(home)
+    if not os.path.isdir(f"collections/{coll_name}"):
+        os.system(f"wb-manager init {coll_name}")
+    if os.path.isfile(warc_file_or_folder):
+        os.system(f"wb-manager add {coll_name} {warc_file_or_folder}")
+    elif os.path.isdir(warc_file_or_folder):
+        folder = slash(warc_file_or_folder)
+        warcs = [x for x in os.listdir(folder)]
+        for warc in warcs:
+            os.system(f"wb-manager add {coll_name} {folder}{warc}")
+
 def combine_warcs(folder):
     folder = slash(folder)
     warcgzs = [x for x in os.listdir(folder) if ".warc.gz" in x]
