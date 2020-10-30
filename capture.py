@@ -216,6 +216,20 @@ class Cdx(object):
 class Response_url_dict(object):
     def __init__(self, rud):
         self.rud = rud
+        self.present = [code for code in rud if rud[code]]
+        for code in self.present:
+            l = []
+            [l.append(url) for url in self.rud[code] if url not in l]
+            self.rud[code] = l
+
+    def deduplicate(self):
+        for code in self.present:
+            if code == 200:
+                continue
+            for url in self.rud[code]:
+                if url in self.rud[200]:
+                    print(url)
+                    self.rud[code].remove(url)
 
     def get_counts(self):
         return {code: len(self.rud[code]) for code in self.rud if self.rud[code]}
@@ -236,7 +250,8 @@ class Response_url_dict(object):
                 self.codes = [int(code.strip()) for code in self.codes if
                           int(code.strip()) in range(0, 1000)]
             except:
-                self.codes = input(f"\nThere is an issue with your list of response codes to patch: {self.codes}\nPlease re-enter in following format: 403,404,500)\n>")
+                self.codes = input(f"\nThere is an issue with your list of response codes to patch: {self.codes}\n"
+                                   f"Please re-enter in following format: 403,404,500)\n>")
 
         for code in self.codes:
             if self.rud[code] != None:
@@ -254,6 +269,7 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
         yaml_object.start(progress)
         cdx = Cdx(f"{home}browsertrix/webarchive/collections/{capture_name}/indexes/autoindex.cdxj")
         rud = cdx.create_rud()
+        rud = rud.deduplicate()
         counts = rud.get_counts()
 
         print("Here are the HTTP responses for this crawl and their frequency:\ncode : freq")
@@ -279,7 +295,7 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
     auto=True if patch else False
     timestamp = datetime.datetime.now().strftime("%d%m%Y")
     urls = no_blanks(url_list)
-    capture_name = get_value(capture_name) "_" + timestamp
+    capture_name = get_value(capture_name) + "_" + timestamp
 
     area = slash(get_value(area))
     capture_loc = area + capture_name
