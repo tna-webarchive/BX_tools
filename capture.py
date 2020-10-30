@@ -1,6 +1,6 @@
 import os, subprocess, time, sys, yaml, gzip, datetime
 
-def prog_bar(total, done, present="In Progress", past="complete"  ):
+def prog_bar(total, done, present="In Progress", past="complete"):
     ratio = int((done / total) * 40)
     black = ratio * "■"
     white = (40 - ratio) * " "
@@ -32,6 +32,8 @@ def generate_cdx(warc_file_or_folder, name="autoindex.cdxj"):
         cdx = f"{folder}{name}"
         for warc in warcs:
             os.system(f"cdxj-indexer {folder}{warc} >> {cdx}")
+    else:
+        sys.exit(f"{warc_file_or_folder} is an invalid file or folder path.")
 
     return cdx
 
@@ -59,17 +61,18 @@ def combine_warcs(folder):
     warcs = [x for x in os.listdir(folder) if x[-5:] == ".warc"]
     for warc in warcs[1:]:
         os.system(f"cat {folder}{warc} >> {folder}{warcs[0]}")
+        os.remove(f"{folder}{warc}")
 
-    with open(f"{folder}{warcs[0]}", "rb") as source, gzip.open(f"{folder}{warcs[0]}.gz", "wb") as dest:
+    with open(f"{folder}{warcs[0]}", "rb") as source, gzip.open(f"{folder}combined.warc.gz", "wb") as dest:
         dest.write(source.read())
 
-    return f"{folder}{warcs[0]}.gz"
+    return f"{folder}combined.warc.gz"
 
 
 class Yaml(object):
     def __init__(self, urls, location, capture_name=(False, "Capture Name"), crawl_name=False):
-        unusable = [".", "-", "/", ":", ",", "?", "!", ";", "(", ")", "[", "]", "{", "}", "#", "@", "\\", "=", "&", ">", "<"]
-        self.urls = no_blanks(urls)
+        unusable = [" ", ".", "-", "/", ":", ",", "?", "!", ";", "(", ")", "[", "]", "{", "}", "#", "@", "\\", "=", "&", ">", "<"]
+        self.urls = list(set(no_blanks(urls)))
         self.location = slash(location)
         self.capture_name = get_value(capture_name)
         while any(punctuation in self.capture_name for punctuation in unusable):
@@ -102,8 +105,7 @@ When happy with the template, save it and hit return here in the terminal>""")
 
     def write(self, crawl_type="custom", crawl_depth=3, num_browsers=1, num_tabs=4, mode="record",
                  browser="chrome:84"):
-
-        if self.crawl_name[:5] == "PATCH": crawl_depth = 1
+        if self.crawl_name[:5] == "PATCH": crawl_depth = 0
         self.yaml_template = self.template.replace('"(', '')
         self.yaml_template = self.yaml_template.replace(')"', '')
 
@@ -114,57 +116,71 @@ When happy with the template, save it and hit return here in the terminal>""")
 
         print("YAML created")
 
-    def run(self, progress=True):
+    def start(self, progress=True):
         home = slash(os.path.expanduser("~"))
         bx_loc = f"{home}browsertrix/webarchive/collections/{self.capture_name}/"
 
-        def check():
-            output = subprocess.run("browsertrix crawl list", shell=True, stdout=subprocess.PIPE).stdout.decode("utf-8")
-            output = output.split("\n")
-            output = no_blanks(output)
-            for i, x in enumerate(output):
-                clean = x.split("  ")
-                clean = no_blanks(clean)
-                clean = [x.strip() for x in clean]
-                if i % 2 == 0:
-                    headings = clean
-                else:
-                    output = dict(zip(headings, clean))
-                    if output["NAME"] == self.crawl_name:
-                        break
-                    else:
-                        return False
-            return output
+        def command():
+            command = f"browsertrix crawl create {self.yaml_loc}"
+            print("Creating New Crawl, Please Wait...")
+            result = subprocess.check_output(command, shell=True).decode("utf-8")
+            x = result.split("\n")[1:3]
+            print(x[0] + "\n" + x[1])
+            print("Check here for more details: http://localhost:8000")
+            crawl_id = x[0].split(": ")[1]
+
+            return crawl_id
+
+        def check(crawl_id):
+            try:
+                info = subprocess.check_output(f"browsertrix crawl info {crawl_id}", shell=True).decode("utf-8")
+            except:
+                return False
+
+            info = yaml.safe_load(info)
+            return info
 
         def running():
-            out = check()
-            while out["STATUS"] != "done":
-                time.sleep(30)
-                out = check()
-                if progress:
-                    done = int(out["SEEN"]) - int(out["TO CRAWL"])
-                    prog_bar(int(out["SEEN"]), done, "Crawling", "URLs crawled")
+            out = check(crawl_id)
+            while out:
+                if out["status"] != "done":
+                    os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
+                    if progress:
+                        done = int(out["num_seen"]) - int(out["num_queue"])
+                        prog_bar(int(out["num_seen"]), done, "Crawling", "URLs crawled")
+                    if out["num_queue"] == 0:
+                        print(f"It looks as though the crawler is stuck.\n"
+                              f"To fix, open http://localhost:9020/attach/{out['browsers'][0]} and click through the active tabs.\n"
+                              f"If that doesn't work, remove the crawl.")
+                    time.sleep(30)
+                    os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
+                    out = check(crawl_id)
 
-            crawl_id = out["CRAWL ID"]
-            os.system(f"browsertrix crawl remove {crawl_id}")
-            print(f"\nCrawl {self.crawl_name} finished.")
+                elif out["status"] == "done":
+                    break
+
+            if not out:
+                print(f"Crawl {self.crawl_name} aborted.")
+            else:
+                os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
+                os.system(f"browsertrix crawl remove {crawl_id}")
+                print(f"\nCrawl {self.crawl_name} finished.")
 
             if not os.path.isfile(f"{bx_loc}indexes/autoindex.cdjx"):
                 os.system(f"sudo chmod -R 777 {bx_loc}")
                 cdx = generate_cdx(f"{bx_loc}archive/")
                 os.system(f"mv {cdx} {bx_loc}indexes/autoindex.cdxj")
 
-        command = f"sudo browsertrix crawl create {self.yaml_loc}"
         if os.path.isfile(f"{self.location}{self.crawl_name}.yaml"):
-            os.system(command)
+            crawl_id = command()
         else:
             self.write()
-            os.system(command)
+            crawl_id = command()
 
-        out = check()
+        out = check(crawl_id)
         if out:
+            time.sleep(7)
             running()
-
         else:
             sys.exit(f"Crawl {self.crawl_name} failed to launch")
 
@@ -229,12 +245,13 @@ class Response_url_dict(object):
         return urls
 
 
-def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "path to directory in which to locate this crawl"), crawl_depth=3, num_tabs=5, mode="record", browser="chrome:84"):
-    def crawl(urls, crawl_name):
+def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "path to directory in which to locate this crawl"),
+            crawl_depth=3, num_tabs=5, mode="record", browser="chrome:84", patch=None,
+            patch_codes=(False, "a list of response codes separated by a comma e.g. 403,404,500"), progress=True):
+    def crawl(urls, crawl_name, patch=patch):
         yaml_object = Yaml(urls, capture_loc, capture_name, crawl_name)
         yaml_object.write(crawl_depth=crawl_depth, num_tabs=num_tabs, mode=mode, browser=browser)
-        yaml_object.run()
-
+        yaml_object.start(progress)
         cdx = Cdx(f"{home}browsertrix/webarchive/collections/{capture_name}/indexes/autoindex.cdxj")
         rud = cdx.create_rud()
         counts = rud.get_counts()
@@ -247,12 +264,11 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
         for x in counts:
             print(x, ":", counts[x])  # minus previous
 
-        patch = None
         while patch not in ["y", "n"]:
             patch = input("Would you like to patch? [Y/n]").lower()
 
         if patch == "y":
-            rerun = rud.get_urls()
+            rerun = rud.get_urls(patch_codes)
         else:
             rerun = False
 
@@ -260,9 +276,11 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
 
         return crawl_details
 
+    auto=True if patch else False
     timestamp = datetime.datetime.now().strftime("%d%m%Y")
     urls = no_blanks(url_list)
-    capture_name = get_value(capture_name) + "_" + timestamp
+    capture_name = get_value(capture_name) "_" + timestamp
+
     area = slash(get_value(area))
     capture_loc = area + capture_name
 
@@ -273,17 +291,14 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
     home = slash(os.path.expanduser("~"))
     crawls = {}
 
-    initialise = "cd ~; cd browsertrix; sudo git pull; sudo docker-compose build;" \
-                 " sudo docker-compose up -d; cd ~;"
-    os.system(initialise)
-
     patch_count = 0
     crawl_details = crawl(urls, capture_name)
     crawls[patch_count] = crawl_details
     rerun = crawls[patch_count]["rerun"]
     while rerun:
+        run_patch="n" if auto else None
         patch_count += 1
-        crawl_details = crawl(rerun, ("PATCH"*patch_count + capture_name))
+        crawl_details = crawl(rerun, ("PATCH"*patch_count + capture_name), patch=run_patch)
         crawls[patch_count] = crawl_details
         rerun = crawls[patch_count]["rerun"]
 
