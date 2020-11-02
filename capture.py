@@ -148,7 +148,7 @@ When happy with the template, save it and hit return here in the terminal>""")
             stuck = 0
             while out:
                 if out["status"] != "done":
-                    os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
+                    #os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
                     if progress:
                         done = int(out["num_seen"]) - int(out["num_queue"])
                         prog_bar(int(out["num_seen"]), done, "Crawling", "URLs crawled")
@@ -161,14 +161,14 @@ When happy with the template, save it and hit return here in the terminal>""")
                     else:
                         stuck = 0
                     time.sleep(30)
-                    os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
+                    #os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
                     out = check(crawl_id)
 
                 elif out["status"] == "done":
                     break
 
             if not out:
-                print(f"Crawl {self.crawl_name} aborted.")
+                print(f"Crawl {self.crawl_name} aborted.\n")
             else:
                 os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
                 os.system(f"browsertrix crawl remove {crawl_id}")
