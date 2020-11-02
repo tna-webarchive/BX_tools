@@ -156,6 +156,7 @@ When happy with the template, save it and hit return here in the terminal>""")
                         stuck += 1
                         if stuck == 3:
                             os.system(f"browsertrix crawl remove {crawl_id}")
+                            out = False
                             continue
                         elif stuck > 1:
                             print(f"\nIt looks as though the crawler is stuck.\n"
