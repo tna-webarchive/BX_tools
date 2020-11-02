@@ -156,6 +156,7 @@ When happy with the template, save it and hit return here in the terminal>""")
                         stuck += 1
                         if stuck == 3:
                             os.system(f"browsertrix crawl remove {crawl_id}")
+                            continue
                         elif stuck > 1:
                             print(f"\nIt looks as though the crawler is stuck.\n"
                                   f"To fix, open http://localhost:9020/attach/{out['browsers'][0]} and click through the active tabs.\n"
@@ -284,22 +285,21 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
         rud.deduplicate()
         counts = rud.get_counts()
 
-        if not auto:
-            print("Here are the HTTP responses for this crawl and their frequency:\ncode : freq")
-            if patch_count > 0:
-                for code in counts:
-                    counts[code] = counts[code] - crawls[patch_count-1]["rescode_counts"][code]
+        print("Here are the HTTP responses for this crawl and their frequency:\ncode : freq")
+        if patch_count > 0:
+            for code in counts:
+                counts[code] = counts[code] - crawls[patch_count-1]["rescode_counts"][code]
 
-            for x in counts:
-                print(x, ":", counts[x])  # minus previous
+        for x in counts:
+            print(x, ":", counts[x])  # minus previous
 
-            while patch not in ["y", "n"]:
-                patch = input("Would you like to patch? [Y/n]").lower()
+        while patch not in ["y", "n"]:
+            patch = input("Would you like to patch? [Y/n]").lower()
 
-            if patch == "y":
-                rerun = rud.get_urls(patch_codes)
-            else:
-                rerun = False
+        if patch == "y":
+            rerun = rud.get_urls(patch_codes)
+        else:
+            rerun = False
 
         crawl_details = {"name": crawl_name, "rescode_counts": counts, "rerun": rerun}
 
