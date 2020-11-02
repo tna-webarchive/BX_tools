@@ -154,7 +154,7 @@ When happy with the template, save it and hit return here in the terminal>""")
                         prog_bar(int(out["num_seen"]), done, "Crawling", "URLs crawled")
                     if out["num_queue"] == 0:
                         stuck += 1
-                        if stuck == 20:
+                        if stuck == 3:
                             os.system(f"browsertrix crawl remove {crawl_id}")
                         elif stuck > 1:
                             print(f"\nIt looks as though the crawler is stuck.\n"
