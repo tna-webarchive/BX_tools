@@ -22,6 +22,13 @@ def no_blanks(_list):
         _list.remove("")
     return _list
 
+def check_validity(name):
+    unusable = [" ", ".", "-", "/", ":", ",", "?", "!", ";", "(", ")", "[", "]", "{", "}", "#", "@", "\\", "=", "&",
+                ">", "<"]
+    while any(punctuation in name for punctuation in unusable):
+        name = input("Capture name cannot include punctuation (except underscore _). Please re-enter: >")
+    return name
+
 def generate_cdx(warc_file_or_folder, name="autoindex.cdxj"):
     if os.path.isfile(warc_file_or_folder):
         cdx = warc_file_or_folder.replace(".warc.gz", ".cdxj")
@@ -68,15 +75,11 @@ def combine_warcs(folder):
 
     return f"{folder}combined.warc.gz"
 
-
 class Yaml(object):
     def __init__(self, urls, location, capture_name=(False, "Capture Name"), crawl_name=False):
-        unusable = [" ", ".", "-", "/", ":", ",", "?", "!", ";", "(", ")", "[", "]", "{", "}", "#", "@", "\\", "=", "&", ">", "<"]
         self.urls = list(set(no_blanks(urls)))
         self.location = slash(location)
-        self.capture_name = get_value(capture_name)
-        while any(punctuation in self.capture_name for punctuation in unusable):
-            self.capture_name = input("Capture name cannot include punctuation (except underscore _). Please re-enter: >")
+        self.capture_name = check_validity(get_value(capture_name))
         self.crawl_name = self.capture_name if not crawl_name else crawl_name
 
         self.yaml_loc = f"{self.location}{self.crawl_name}.yaml"
@@ -302,7 +305,7 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
     auto=True if patch else False
     timestamp = datetime.datetime.now().strftime("%d%m%Y")
     urls = no_blanks(url_list)
-    capture_name = get_value(capture_name) + "_" + timestamp
+    capture_name = check_validity(get_value(capture_name)) + "_" + timestamp
 
     area = slash(get_value(area))
     capture_loc = area + capture_name
