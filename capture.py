@@ -17,10 +17,10 @@ def slash(folder_path):
         sys.exit(f"{folder_path} is an invalid folder path.")
     return folder_path
 
-def no_blanks(list):
-    while "" in list:
-        list.remove("")
-    return list
+def no_blanks(_list):
+    while "" in _list:
+        _list.remove("")
+    return _list
 
 def generate_cdx(warc_file_or_folder, name="autoindex.cdxj"):
     if os.path.isfile(warc_file_or_folder):
@@ -197,7 +197,7 @@ class Cdx(object):
             with open(cdx, "r") as self.cdx:
                 self.cdx = self.cdx.read().split("\n")
         except:
-            print(f"It seems there is no CDX at location {cdx}.")
+            sys.exit(f"It seems there is no CDX at location {cdx}")
 
         self.cdx = no_blanks(self.cdx)
         self.cdx = [eval(line.split(" ", 2)[2]) for line in self.cdx]
@@ -235,6 +235,8 @@ class Response_url_dict(object):
                 if url in self.rud[200]:
                     print(url)
                     self.rud[code].remove(url)
+        self.present = [code for code in self.rud if self.rud[code]]
+        return self
 
     def get_counts(self):
         return {code: len(self.rud[code]) for code in self.rud if self.rud[code]}
