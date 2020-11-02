@@ -154,8 +154,10 @@ When happy with the template, save it and hit return here in the terminal>""")
                         prog_bar(int(out["num_seen"]), done, "Crawling", "URLs crawled")
                     if out["num_queue"] == 0:
                         stuck += 1
-                        if stuck > 1:
-                            print(f"It looks as though the crawler is stuck.\n"
+                        if stuck == 20:
+                            os.system(f"browsertrix crawl remove {crawl_id}")
+                        elif stuck > 1:
+                            print(f"\nIt looks as though the crawler is stuck.\n"
                                   f"To fix, open http://localhost:9020/attach/{out['browsers'][0]} and click through the active tabs.\n"
                                   f"If that doesn't work, remove the crawl.", end="\r")
                     else:
@@ -168,7 +170,7 @@ When happy with the template, save it and hit return here in the terminal>""")
                     break
 
             if not out:
-                print(f"Crawl {self.crawl_name} aborted.\n")
+                print(f"\nCrawl {self.crawl_name} aborted.\n")
             else:
                 os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
                 os.system(f"browsertrix crawl remove {crawl_id}")
@@ -282,21 +284,22 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
         rud.deduplicate()
         counts = rud.get_counts()
 
-        print("Here are the HTTP responses for this crawl and their frequency:\ncode : freq")
-        if patch_count > 0:
-            for code in counts:
-                counts[code] = counts[code] - crawls[patch_count-1]["rescode_counts"][code]
+        if not auto:
+            print("Here are the HTTP responses for this crawl and their frequency:\ncode : freq")
+            if patch_count > 0:
+                for code in counts:
+                    counts[code] = counts[code] - crawls[patch_count-1]["rescode_counts"][code]
 
-        for x in counts:
-            print(x, ":", counts[x])  # minus previous
+            for x in counts:
+                print(x, ":", counts[x])  # minus previous
 
-        while patch not in ["y", "n"]:
-            patch = input("Would you like to patch? [Y/n]").lower()
+            while patch not in ["y", "n"]:
+                patch = input("Would you like to patch? [Y/n]").lower()
 
-        if patch == "y":
-            rerun = rud.get_urls(patch_codes)
-        else:
-            rerun = False
+            if patch == "y":
+                rerun = rud.get_urls(patch_codes)
+            else:
+                rerun = False
 
         crawl_details = {"name": crawl_name, "rescode_counts": counts, "rerun": rerun}
 
