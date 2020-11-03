@@ -174,7 +174,7 @@ When happy with the template, save it and hit return here in the terminal>""")
             if not out:
                 print(f"\nCrawl {self.crawl_name} aborted.\n")
             else:
-                os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
+                os.system(f'sudo browsertrix crawl logs {crawl_id} >> {self.location}logs.txt')
                 os.system(f"browsertrix crawl remove {crawl_id}")
                 print(f"\nCrawl {self.crawl_name} finished.")
 
