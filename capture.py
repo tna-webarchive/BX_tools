@@ -283,14 +283,13 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
         yaml_object.start(progress)
         cdx = Cdx(f"{home}browsertrix/webarchive/collections/{capture_name}/indexes/autoindex.cdxj")
         rud = cdx.create_rud()
-        if patch_count > 0:
-            rud.deduplicate()
+        rud.deduplicate()
         counts = rud.get_counts()
 
         print("Here are the HTTP responses for this crawl and their frequency:\ncode : freq")
-        if patch_count > 0:
-            for code in counts:
-                counts[code] = counts[code] - crawls[patch_count-1]["rescode_counts"][code]
+        # if patch_count > 0:
+        #     for code in counts:
+        #         counts[code] = counts[code] - crawls[patch_count-1]["rescode_counts"][code]
 
         for x in counts:
             print(x, ":", counts[x])  # minus previous
