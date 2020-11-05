@@ -239,9 +239,13 @@ class Response_url_dict(object):
             if code == 200:
                 continue
             for url in self.rud[code]:
+                to_remove = []
                 if url in self.rud[200]:
+                    to_remove.append(url)
                     print(url)
-                    self.rud[code].remove(url)
+            for url in to_remove:
+                self.rud[code].remove(url)
+
         self.present = [code for code in self.rud if self.rud[code]]
         return self
 
