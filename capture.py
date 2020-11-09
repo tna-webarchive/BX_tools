@@ -236,13 +236,12 @@ class Response_url_dict(object):
 
     def deduplicate(self):
         for code in self.present:
+            to_remove = []
             if code == 200:
                 continue
             for url in self.rud[code]:
-                to_remove = []
                 if url in self.rud[200]:
                     to_remove.append(url)
-                    print(url)
             for url in to_remove:
                 self.rud[code].remove(url)
 
