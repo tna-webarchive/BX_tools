@@ -70,8 +70,12 @@ def combine_warcs(folder):
         os.system(f"cat {folder}{warc} >> {folder}{warcs[0]}")
         os.remove(f"{folder}{warc}")
 
-    with open(f"{folder}{warcs[0]}", "rb") as source, gzip.open(f"{folder}combined.warc.gz", "wb") as dest:
+    with open(f"{folder}{warcs[0]}", "rb") as source, gzip.open(f"{folder}temp.warc.gz", "wb") as dest:
         dest.write(source.read())
+    os.remove(f"{folder}{warcs[0]}")
+
+    os.system(f"warcio recompress {folder}temp.warc.gz {folder}combined.warc.gz ")
+    os.remove(f"{folder}temp.warc.gz")
 
     return f"{folder}combined.warc.gz"
 
