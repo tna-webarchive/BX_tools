@@ -57,24 +57,32 @@ def to_pywb(warc_file_or_folder, coll_name):
         for warc in warcs:
             os.system(f"wb-manager add {coll_name} {folder}{warc}")
 
+
 def combine_warcs(folder):
     folder = slash(folder)
-    warcgzs = [x for x in os.listdir(folder) if ".warc.gz" in x]
+    warcs = [x for x in os.listdir(folder) if ".warc" in x]
+    compressed_warcs = []
+    for i, warc in enumerate(warcs):
+        os.system(f"warcio recompress {folder}{warc} {folder}{i}.warc.gz")
+        compressed_warcs.append(f"{folder}{i}.warc.gz")
 
-    for warc in warcgzs:
-        with gzip.open(f"{folder}{warc}", "rb") as source, open(f"{folder}{warc[:-3]}", "wb") as dest:
+    for warc in compressed_warcs:
+        with gzip.open(f"{warc}", "rb") as source, open(f"{warc[:-3]}", "wb") as dest:
             dest.write(source.read())
 
-    warcs = [x for x in os.listdir(folder) if x[-5:] == ".warc"]
+    warcs = [x[:-3] for x in compressed_warcs]
     for warc in warcs[1:]:
-        os.system(f"cat {folder}{warc} >> {folder}{warcs[0]}")
-        os.remove(f"{folder}{warc}")
+        os.system(f"cat {warc} >> {warcs[0]}")
+        os.remove(f"{warc}")
 
-    with open(f"{folder}{warcs[0]}", "rb") as source, gzip.open(f"{folder}temp.warc.gz", "wb") as dest:
+    with open(f"{warcs[0]}", "rb") as source, gzip.open(f"{folder}temp.warc.gz", "wb") as dest:
         dest.write(source.read())
-    os.remove(f"{folder}{warcs[0]}")
+    os.remove(f"{warcs[0]}")
 
-    os.system(f"warcio recompress {folder}temp.warc.gz {folder}combined.warc.gz ")
+    for x in compressed_warcs:
+        os.remove(x)
+
+    os.system(f"warcio recompress {folder}temp.warc.gz {folder}combined.warc.gz")
     os.remove(f"{folder}temp.warc.gz")
 
     return f"{folder}combined.warc.gz"
