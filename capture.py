@@ -58,7 +58,7 @@ def to_pywb(warc_file_or_folder, coll_name):
             os.system(f"wb-manager add {coll_name} {folder}{warc}")
 
 
-def combine_warcs(folder, dest=False):
+def combine_warcs(folder, dest=False, name="combined"):
     if not dest:
         dest = folder
     else:
@@ -88,9 +88,9 @@ def combine_warcs(folder, dest=False):
 
     os.system(f"warcio recompress {folder}temp.warc.gz {folder}combined.warc.gz")
     os.remove(f"{folder}temp.warc.gz")
-    os.replace(f"{folder}combined.warc.gz", f"{dest}combined.warc.gz")
+    os.replace(f"{folder}combined.warc.gz", f"{dest}{name}.warc.gz")
 
-    return f"{dest}combined.warc.gz"
+    return f"{dest}{name}.warc.gz"
 
 class Yaml(object):
     def __init__(self, urls, location, capture_name=(False, "Capture Name"), crawl_name=False):
@@ -296,7 +296,7 @@ class Response_url_dict(object):
 
 def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "path to directory in which to locate this crawl"),
             crawl_depth=3, num_tabs=5, mode="record", browser="chrome:84", patch=None,
-            patch_codes=(False, "a list of response codes separated by a comma e.g. 403,404,500"), progress=True):
+            patch_codes=(False, "a list of response codes separated by a comma e.g. 403,404,500"), progress=True, warc_name="combined"):
     def crawl(urls, crawl_name, patch=patch):
         yaml_object = Yaml(urls, capture_loc, capture_name, crawl_name)
         yaml_object.write(crawl_depth=crawl_depth, num_tabs=num_tabs, mode=mode, browser=browser)
@@ -356,5 +356,5 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
 
     os.system(f"sudo cp -r {home}browsertrix/webarchive/collections/{capture_name} {capture_loc}")
     os.system(f"sudo chmod -R 777 {capture_loc}")
-    combined_warc = combine_warcs(f"{capture_loc}{capture_name}/archive", capture_loc)
+    combined_warc = combine_warcs(f"{capture_loc}{capture_name}/archive", capture_loc, warc_name)
     print(f"Capture complete. WARC file located at:\n{combined_warc}")
