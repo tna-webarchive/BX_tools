@@ -182,7 +182,7 @@ When happy with the template, save it and hit return here in the terminal>""")
                     # else:
                     #     stuck = 0
                     time.sleep(30)
-                    #os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
+
                     out = check(crawl_id)
 
                 elif out["status"] == "done":
