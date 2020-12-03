@@ -58,11 +58,11 @@ def to_pywb(warc_file_or_folder, coll_name):
             os.system(f"wb-manager add {coll_name} {folder}{warc}")
 
 
-def combine_warcs(folder, dest=False, name="combined"):
-    if not dest:
-        dest = folder
+def combine_warcs(folder, destination=False, name="combined"):
+    if not destination:
+        destination = folder
     else:
-        dest = slash(dest)
+        destination = slash(destination)
     folder = slash(folder)
     warcs = [x for x in os.listdir(folder) if ".warc" in x]
     compressed_warcs = []
@@ -88,9 +88,9 @@ def combine_warcs(folder, dest=False, name="combined"):
 
     os.system(f"warcio recompress {folder}temp.warc.gz {folder}combined.warc.gz")
     os.remove(f"{folder}temp.warc.gz")
-    os.replace(f"{folder}combined.warc.gz", f"{dest}{name}.warc.gz")
+    os.replace(f"{folder}combined.warc.gz", f"{destination}{name}.warc.gz")
 
-    return f"{dest}{name}.warc.gz"
+    return f"{destination}{name}.warc.gz"
 
 class Yaml(object):
     def __init__(self, urls, location, capture_name=(False, "Capture Name"), crawl_name=False):
