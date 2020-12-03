@@ -60,7 +60,7 @@ def to_pywb(warc_file_or_folder, coll_name):
 
 def combine_warcs(folder, destination=False, name="combined"):
     if not destination:
-        destination = folder
+        destination = slash(folder)
     else:
         destination = slash(destination)
     folder = slash(folder)
