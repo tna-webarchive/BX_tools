@@ -234,9 +234,9 @@ class Cdx(object):
         for line in self.cdx:
             if "status" not in line.keys():
                 continue
-            try:
+            if self.rud[int(line["status"])]:
                 self.rud[int(line["status"])].append(line["url"])
-            except:
+            else:
                 self.rud[int(line["status"])] = [line["url"]]
 
         return Response_url_dict(self.rud)
@@ -248,19 +248,21 @@ class Response_url_dict(object):
         self.present = [code for code in rud if rud[code]]
         for code in self.present:
             l = []
-            [l.append(url) for url in self.rud[code] if url not in l]
+            [l.append(url) for url in self.rud[code] if url not in l] ###deduplicates from same status code
             self.rud[code] = l
 
-    def deduplicate(self):
+    def deduplicate(self):   ####deduplicates unsuccessful captures if there is a successful one
+        success = set(self.rud[200]+self.rud[204])
         for code in self.present:
             to_remove = []
-            if code == 200:
+            if code == 200 or code == 204:
                 continue
             for url in self.rud[code]:
-                if url in self.rud[200]:
+                if url in success:
                     to_remove.append(url)
             for url in to_remove:
-                self.rud[code].remove(url)
+                while url in self.rud[code]:
+                    self.rud[code].remove(url)
 
         self.present = [code for code in self.rud if self.rud[code]]
         return self

@@ -226,44 +226,45 @@ class Cdx(object):
         self.cdx = no_blanks(self.cdx)
         self.cdx = [eval(line.split(" ", 2)[2]) for line in self.cdx]
 
-    def create_rud(self):
-        self.rud = {}
-        for x in range(0, 1000):
-            self.rud[x] = None
+        def create_rud(self):
+            self.rud = {}
+            for x in range(0, 1000):
+                self.rud[x] = None
 
-        for line in self.cdx:
-            if "status" not in line.keys():
-                continue
-            try:
-                self.rud[int(line["status"])].append(line["url"])
-            except:
-                self.rud[int(line["status"])] = [line["url"]]
+            for line in self.cdx:
+                if "status" not in line.keys():
+                    continue
+                if self.rud[int(line["status"])]:
+                    self.rud[int(line["status"])].append(line["url"])
+                else:
+                    self.rud[int(line["status"])] = [line["url"]]
 
-        return Response_url_dict(self.rud)
+            return Response_url_dict(self.rud)
 
+    class Response_url_dict(object):
+        def __init__(self, rud):
+            self.rud = rud
+            self.present = [code for code in rud if rud[code]]
+            for code in self.present:
+                l = []
+                [l.append(url) for url in self.rud[code] if url not in l]  ###deduplicates from same status code
+                self.rud[code] = l
 
-class Response_url_dict(object):
-    def __init__(self, rud):
-        self.rud = rud
-        self.present = [code for code in rud if rud[code]]
-        for code in self.present:
-            l = []
-            [l.append(url) for url in self.rud[code] if url not in l]
-            self.rud[code] = l
+        def deduplicate(self):  ####deduplicates unsuccessful captures if there is a successful one
+            success = set(self.rud[200] + self.rud[204])
+            for code in self.present:
+                to_remove = []
+                if code == 200 or code == 204:
+                    continue
+                for url in self.rud[code]:
+                    if url in success:
+                        to_remove.append(url)
+                for url in to_remove:
+                    while url in self.rud[code]:
+                        self.rud[code].remove(url)
 
-    def deduplicate(self):
-        for code in self.present:
-            to_remove = []
-            if code == 200:
-                continue
-            for url in self.rud[code]:
-                if url in self.rud[200]:
-                    to_remove.append(url)
-            for url in to_remove:
-                self.rud[code].remove(url)
-
-        self.present = [code for code in self.rud if self.rud[code]]
-        return self
+            self.present = [code for code in self.rud if self.rud[code]]
+            return self
 
     def get_counts(self):
         return {code: len(self.rud[code]) for code in self.rud if self.rud[code]}
@@ -358,3 +359,4 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
     os.system(f"sudo chmod -R 777 {capture_loc}")
     combined_warc = combine_warcs(f"{capture_loc}{capture_name}/archive", capture_loc, warc_name)
     print(f"Capture complete. WARC file located at:\n{combined_warc}")
+
