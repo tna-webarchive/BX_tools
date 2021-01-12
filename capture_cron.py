@@ -226,20 +226,20 @@ class Cdx(object):
         self.cdx = no_blanks(self.cdx)
         self.cdx = [eval(line.split(" ", 2)[2]) for line in self.cdx]
 
-        def create_rud(self):
-            self.rud = {}
-            for x in range(0, 1000):
-                self.rud[x] = None
+    def create_rud(self):
+        self.rud = {}
+        for x in range(0, 1000):
+            self.rud[x] = None
 
-            for line in self.cdx:
-                if "status" not in line.keys():
-                    continue
-                if self.rud[int(line["status"])]:
-                    self.rud[int(line["status"])].append(line["url"])
-                else:
-                    self.rud[int(line["status"])] = [line["url"]]
+        for line in self.cdx:
+            if "status" not in line.keys():
+                continue
+            if self.rud[int(line["status"])]:
+                self.rud[int(line["status"])].append(line["url"])
+            else:
+                self.rud[int(line["status"])] = [line["url"]]
 
-            return Response_url_dict(self.rud)
+        return Response_url_dict(self.rud)
 
 class Response_url_dict(object):
     def __init__(self, rud):
