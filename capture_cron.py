@@ -1,5 +1,7 @@
 import os, subprocess, time, sys, yaml, gzip, datetime
 
+home = "/home/ubuntu/"
+
 def prog_bar(total, done, present="In Progress", past="complete"):
     ratio = int((done / total) * 40)
     black = ratio * "■"
@@ -45,7 +47,6 @@ def generate_cdx(warc_file_or_folder, name="autoindex.cdxj"):
     return cdx
 
 def to_pywb(warc_file_or_folder, coll_name):
-    home = "/home/work/"
     os.chdir(home)
     if not os.path.isdir(f"collections/{coll_name}"):
         os.system(f"wb-manager init {coll_name}")
@@ -137,7 +138,6 @@ When happy with the template, save it and hit return here in the terminal>""")
         print("YAML created")
 
     def start(self, progress=True):
-        home = "/home/work/"
         bx_loc = f"{home}browsertrix/webarchive/collections/{self.capture_name}/"
 
         def command():
@@ -339,7 +339,6 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
         os.mkdir(capture_loc)
 
     capture_loc = slash(capture_loc)
-    home = "/home/work/"
     crawls = {}
 
     patch_count = 0
