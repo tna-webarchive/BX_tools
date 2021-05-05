@@ -251,7 +251,9 @@ class Response_url_dict(object):
             self.rud[code] = l
 
     def deduplicate(self):  ####deduplicates unsuccessful captures if there is a successful one
-        success = set(self.rud[200] + self.rud[204])
+        success = self.rud[200]
+        if self.rud[204]:
+            success += self.rud[204]
         for code in self.present:
             to_remove = []
             if code == 200 or code == 204:
