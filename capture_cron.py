@@ -68,7 +68,7 @@ def combine_warcs(folder, destination=False, name="combined"):
     warcs = [x for x in os.listdir(folder) if ".warc" in x]
     compressed_warcs = []
     for i, warc in enumerate(warcs):
-        os.system(f"warcio recompress {folder}{warc} {folder}{i}.warc.gz")
+        os.system(f"sudo warcio recompress {folder}{warc} {folder}{i}.warc.gz")
         compressed_warcs.append(f"{folder}{i}.warc.gz")
 
     for warc in compressed_warcs:
@@ -87,7 +87,7 @@ def combine_warcs(folder, destination=False, name="combined"):
     for x in compressed_warcs:
         os.remove(x)
 
-    os.system(f"warcio recompress {folder}temp.warc.gz {folder}combined.warc.gz")
+    os.system(f"sudo warcio recompress {folder}temp.warc.gz {folder}combined.warc.gz")
     os.remove(f"{folder}temp.warc.gz")
     os.replace(f"{folder}combined.warc.gz", f"{destination}{name}.warc.gz")
 
