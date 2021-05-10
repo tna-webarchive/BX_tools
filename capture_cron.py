@@ -355,7 +355,7 @@ def capture(url_list, capture_name=(False, "name of Capture"), area=(False, "pat
     crawls[patch_count] = crawl_details
     rerun = crawls[patch_count]["rerun"]
     while rerun:
-        if patch_count > 5:
+        if patch_count > 3:
             break
         run_patch="y" if auto else None
         patch_count += 1
