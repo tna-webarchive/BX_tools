@@ -164,6 +164,12 @@ When happy with the template, save it and hit return here in the terminal>""")
             out = check(crawl_id)
             stuck = 0
             while out:
+                if out["num_queue"] == 0:
+                    stuck += 1
+                    if stuck == 10:
+                        os.system(f"browsertrix crawl remove {crawl_id}")
+                        out = False
+                        continue
                 if out["status"] != "done":
                     #os.system(f'sudo browsertrix crawl logs {crawl_id} > {self.location}logs.txt')
                     if progress:
